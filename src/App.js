@@ -7,7 +7,10 @@ function App() {
 
   const [nombre,setNombre] = useState("");
   const [genero,setGenero] = useState("");
-  const [costo,setCosto] = useState(0);
+  const [costo,setCosto] = useState();
+  const [id,setId] = useState();
+
+  const [editar,setEditar] = useState(false);
 
   const [peliculasLis,setPeliculas] = useState([]);
 
@@ -18,8 +21,37 @@ function App() {
       costo:costo
     }).then(()=>{  
       getPeliculas();
+      limpiarCampos();
       alert("Pelicula registrado");
     });
+  }
+
+  const update = ()=>{
+    Axios.put("http://localhost:3001/update",{
+      id:id,
+      nombre:nombre,
+      genero:genero,
+      costo:costo
+    }).then(()=>{  
+      getPeliculas();
+      limpiarCampos();
+    });
+  }
+
+  const limpiarCampos = ()=> {
+    setNombre("");
+    setGenero("");
+    setCosto("");
+    setEditar(false);
+  }
+
+  const editarPelicula = (val)=>{
+    setEditar(true);
+
+    setNombre(val.nombre);
+    setGenero(val.genero);
+    setCosto(val.costo);
+    setId(val.id);
   }
 
   const getPeliculas = ()=>{
@@ -42,7 +74,7 @@ function App() {
               onChange={(event)=>{
                 setNombre(event.target.value);
               }}
-              className="form-control" placeholder="Nombre de la Pelicula" aria-label="Username" aria-describedby="basic-addon1"/>
+              className="form-control" value={nombre} placeholder="Nombre de la Pelicula" aria-label="Username" aria-describedby="basic-addon1"/>
             </div>
             <div className="input-group mb-3">
               <span className="input-group-text" id="basic-addon1">Genero:</span>
@@ -50,7 +82,7 @@ function App() {
               onChange={(event)=>{
                 setGenero(event.target.value);
               }}
-              className="form-control" placeholder="Genero de la Pelicula" aria-label="Username" aria-describedby="basic-addon1"/>
+              className="form-control" value={genero} placeholder="Genero de la Pelicula" aria-label="Username" aria-describedby="basic-addon1"/>
             </div>
             <div className="input-group mb-3">
               <span className="input-group-text" id="basic-addon1">Costo:</span>
@@ -58,11 +90,17 @@ function App() {
               onChange={(event)=>{
                 setCosto(event.target.value);
               }}
-              className="form-control" placeholder="Costo de la Pelicula" aria-label="Username" aria-describedby="basic-addon1"/>
+              className="form-control" value={costo} placeholder="Costo de la Pelicula" aria-label="Username" aria-describedby="basic-addon1"/>
             </div>              
           </div>
           <div className="card-footer text-muted">
-            <button className='btn btn-success' onClick={add}>Registrar</button>
+            {
+              editar ?
+              <div>
+              <button className='btn btn-warning m-2' onClick={update}>Acualizar</button><button className='btn btn-info m-2' onClick={limpiarCampos}>Cancelar</button>
+              </div>
+              : <button className='btn btn-success' onClick={add}>Registrar</button>
+            }
           </div>
         </div>
         <button className='btn btn-success' onClick={getPeliculas}>Obtener Peliculas</button>
@@ -73,6 +111,7 @@ function App() {
             <th scope="col">Nombre Pelicula</th>
             <th scope="col">Genero</th>
             <th scope="col">Precio</th>
+            <th scope="col">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -83,6 +122,16 @@ function App() {
                       <td>{val.nombre}</td>
                       <td>{val.genero}</td>
                       <td>{val.costo}</td>
+                      <td>
+                      <div class="btn-group" role="group" aria-label="Basic example">
+                        <button type="button"
+                        onClick={()=>{
+                          editarPelicula(val);
+                        }}
+                        className="btn btn-info">Editar</button>
+                        <button type="button" className="btn btn-danger">Eliminar</button>
+                      </div>
+                      </td>
                     </tr>
             })
           }
